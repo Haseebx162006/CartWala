@@ -1,4 +1,6 @@
 import 'package:cartwala/GlobalVariables.dart';
+import 'package:cartwala/Route.dart';
+import 'package:cartwala/features/auth/screens/Signup.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,6 +14,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) => generateRoute(settings),
       title: "Amazon Clone",
       theme: ThemeData(
         scaffoldBackgroundColor: GlobalVariables.backgroundColor,
@@ -28,6 +32,16 @@ class MyApp extends StatelessWidget {
           children: [
             Center(
               child: Container(height: 100, width: 100, color: Colors.red),
+            ),
+            Builder(
+              builder: (context) {
+                return ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, Signup.SignupScreen);
+                  },
+                  child: Text("Click me yar"),
+                );
+              },
             ),
           ],
         ),
