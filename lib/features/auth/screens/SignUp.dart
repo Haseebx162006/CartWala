@@ -1,3 +1,4 @@
+import 'package:cartwala/features/auth/services/FIrebase_Auth/AuthService.dart';
 import 'package:cartwala/features/auth/widgets/auth_button.dart';
 import 'package:cartwala/features/auth/widgets/auth_container.dart';
 import 'package:flutter/material.dart';
@@ -120,7 +121,17 @@ class _SignupState extends State<Signup> {
               ],
             ),
             SizedBox(height: 5),
-            AuthButton(text: "Sign Up", onPressed: () => {}),
+            AuthButton(
+              text: "Sign Up",
+              onPressed: () => {
+                createUserwithEmailandPassword(
+                  context,
+                  nameController.text.trim(),
+                  emailController.text.trim(),
+                  passwordController.text.trim(),
+                ),
+              },
+            ),
             SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -135,7 +146,7 @@ class _SignupState extends State<Signup> {
                 ),
               ],
             ),
-
+            SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

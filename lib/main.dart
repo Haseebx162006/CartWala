@@ -1,9 +1,15 @@
 import 'package:cartwala/GlobalVariables.dart';
 import 'package:cartwala/Route.dart';
-import 'package:cartwala/features/auth/screens/Signup.dart';
+import 'package:cartwala/features/auth/screens/LoginScreen.dart';
+import 'package:cartwala/firebase_options.dart';
+import 'package:cartwala/myHomePage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -25,26 +31,18 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.black),
         ),
       ),
-      home: Scaffold(
-        appBar: AppBar(title: Text("Amazon", style: TextStyle(fontSize: 23))),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Container(height: 100, width: 100, color: Colors.red),
-            ),
-            Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, Signup.SignupScreen);
-                  },
-                  child: Text("Click me yar"),
-                );
-              },
-            ),
-          ],
-        ),
+      home: StreamBuilder(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.data != null) {
+            return myHomePage();
+          }
+
+          return LoginScreen();
+        },
       ),
     );
   }
