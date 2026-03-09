@@ -91,3 +91,5 @@ coverage/
 
 server/.env
 node_modules/
+windows/Flutter/ephemeral/
+windows/Flutter/flutter_export_environment.bat
