@@ -100,4 +100,11 @@ windows/Flutter/ephemeral/flutter_windows_.dll
 
 
 
-windows/
+# Flutter build files
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Windows ephemeral files
+windows/flutter/ephemeral/
