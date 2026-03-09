@@ -94,6 +94,10 @@ node_modules/
 windows/Flutter/ephemeral/
 windows/Flutter/flutter_export_environment.bat
 
-windiws/Flutter/ephemeral/flutter_windows_*.zip
+windows/Flutter/ephemeral/flutter_windows_*.zip
 windows/Flutter/ephemeral/flutter_windows_.dll.pdb
 windows/Flutter/ephemeral/flutter_windows_.dll
+
+
+
+windows/
