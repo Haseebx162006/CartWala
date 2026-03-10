@@ -108,3 +108,10 @@ build/
 
 # Windows ephemeral files
 windows/flutter/ephemeral/
+
+firebase_app_distribution/
+
+serviceAccountKey.json
+firebase_options.dart
+
+google-services.json (sometimes private)

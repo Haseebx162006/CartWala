@@ -124,7 +124,7 @@ class _SignupState extends State<Signup> {
             AuthButton(
               text: "Sign Up",
               onPressed: () => {
-                createUserwithEmailandPassword(
+                Authservice().createUserwithEmailandPassword(
                   context,
                   nameController.text.trim(),
                   emailController.text.trim(),
@@ -152,7 +152,9 @@ class _SignupState extends State<Signup> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Authservice().signUpWithGoogle(context);
+                    },
                     child: Container(
                       height: 60,
                       decoration: BoxDecoration(

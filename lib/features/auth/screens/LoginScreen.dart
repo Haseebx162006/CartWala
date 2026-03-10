@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
             AuthButton(
               text: "Sign In",
               onPressed: () => {
-                signInWithEmailAndPassword(
+                Authservice().signInWithEmailAndPassword(
                   context,
                   emailController.text.trim(),
                   passwordController.text.trim(),
@@ -104,7 +104,9 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Authservice().signUpWithGoogle(context);
+                    },
                     child: Container(
                       height: 60,
                       decoration: BoxDecoration(
