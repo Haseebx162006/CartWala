@@ -147,301 +147,294 @@ class _myHomePageState extends ConsumerState<myHomePage> {
       child: RefreshIndicator(
         color: AppColors.lime,
         onRefresh: () => ref.read(ProductProvider.notifier).fetchProducts(),
-        child: CustomScrollView(
-          slivers: [
-            // ── Header ────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+        // A single ListView holds every section in order
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // ── Header ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hello, ${user?.name ?? 'Shopper'} 👋',
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const Text(
+                        'Welcome to Cartwala',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 22,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _currentNavIndex = 1),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.lime.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Badge(
+                        isLabelVisible: ref.watch(cartProvider).isNotEmpty,
+                        label: Text(
+                          '${ref.watch(cartProvider).length}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                        backgroundColor: AppColors.error,
+                        child: const Icon(
+                          Icons.shopping_cart_rounded,
+                          color: AppColors.limeDark,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Search bar ───────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: TextField(
+                controller: searchController,
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: InputDecoration(
+                  hintText: 'Search products...',
+                  hintStyle: const TextStyle(
+                    fontFamily: 'Poppins',
+                    color: AppColors.textHint,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textSecondary,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: AppColors.limeDark,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Categories ───────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 4),
+              child: SizedBox(
+                height: 44,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    final selected =
+                        (_selectedCategory ?? 'All') == cat['label'];
+                    return GestureDetector(
+                      onTap: () => setState(
+                        () => _selectedCategory = cat['label'] as String,
+                      ),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.headerDark
+                              : AppColors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.headerDark
+                                : AppColors.divider,
+                          ),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              'Hello, ${user?.name ?? 'Shopper'} 👋',
-                              style: const TextStyle(
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
+                            Icon(
+                              cat['icon'] as IconData,
+                              size: 18,
+                              color: selected
+                                  ? AppColors.lime
+                                  : AppColors.textSecondary,
                             ),
-                            const Text(
-                              'Welcome to Cartwala',
+                            const SizedBox(width: 6),
+                            Text(
+                              cat['label'] as String,
                               style: TextStyle(
                                 fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 22,
-                                color: AppColors.textPrimary,
+                                fontSize: 13,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: selected
+                                    ? Colors.white
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           ],
                         ),
-                        GestureDetector(
-                          onTap: () => setState(() => _currentNavIndex = 1),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.lime.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Badge(
-                              isLabelVisible: ref
-                                  .watch(cartProvider)
-                                  .isNotEmpty,
-                              label: Text(
-                                '${ref.watch(cartProvider).length}',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              backgroundColor: AppColors.error,
-                              child: const Icon(
-                                Icons.shopping_cart_rounded,
-                                color: AppColors.limeDark,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // ── Search bar ─────────────────────────────
-                    TextField(
-                      controller: searchController,
-                      onChanged: (v) => setState(() => _searchQuery = v),
-                      decoration: InputDecoration(
-                        hintText: 'Search products...',
-                        hintStyle: const TextStyle(
-                          fontFamily: 'Poppins',
-                          color: AppColors.textHint,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search_rounded,
-                          color: AppColors.textSecondary,
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded),
-                                onPressed: () {
-                                  searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: AppColors.divider),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: AppColors.divider),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(
-                            color: AppColors.limeDark,
-                            width: 1.5,
-                          ),
-                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ),
 
-            // ── Categories ────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 16, 0, 4),
-                child: SizedBox(
-                  height: 44,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final cat = _categories[index];
-                      final selected =
-                          (_selectedCategory ?? 'All') == cat['label'];
-                      return GestureDetector(
-                        onTap: () => setState(
-                          () => _selectedCategory = cat['label'] as String,
-                        ),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? AppColors.headerDark
-                                : AppColors.surface,
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                              color: selected
-                                  ? AppColors.headerDark
-                                  : AppColors.divider,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                cat['icon'] as IconData,
-                                size: 18,
-                                color: selected
-                                    ? AppColors.lime
-                                    : AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                cat['label'] as String,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 13,
-                                  fontWeight: selected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: selected
-                                      ? Colors.white
-                                      : AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-
-            // ── Flash sale banner ─────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: SizedBox(
-                  height: 160,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: discounts.length,
-                    itemBuilder: (context, index) {
-                      return FlashCard(
-                        discount: discounts[index],
-                        subTitle: subtitles[index],
-                      );
-                    },
-                  ),
+            // ── Flash sale banners ────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: SizedBox(
+                height: 160,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: discounts.length,
+                  itemBuilder: (context, index) {
+                    return FlashCard(
+                      discount: discounts[index],
+                      subTitle: subtitles[index],
+                    );
+                  },
                 ),
               ),
             ),
 
             // ── Section header ────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _selectedCategory != null && _selectedCategory != 'All'
-                          ? _selectedCategory!
-                          : 'All Products',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedCategory != null && _selectedCategory != 'All'
+                        ? _selectedCategory!
+                        : 'All Products',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
-                    Text(
-                      '${products.length} items',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
+                  ),
+                  Text(
+                    '${products.length} items',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
 
-            // ── Product grid ──────────────────────────────────────
-            if (products.isEmpty)
-              const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.search_off_rounded,
-                        size: 64,
-                        color: AppColors.textHint,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'No products found',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          color: AppColors.textSecondary,
+            // ── Product grid (or empty state) ─────────────────────
+            products.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 60),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 64,
+                          color: AppColors.textHint,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.68,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final p = products[index];
-                    return GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProductDetailScreen(product: p),
+                        SizedBox(height: 12),
+                        Text(
+                          'No products found',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 16,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      child: ProductCard(
-                        productName: p.name,
-                        productPrice: p.price,
-                        imageUrl: p.imageUrl,
-                      ),
-                    );
-                  }, childCount: products.length),
-                ),
-              ),
+                      ],
+                    ),
+                  )
+                : _buildProductGrid(products),
+
+            const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Product grid built with Wrap (no Slivers needed) ──────────────────────
+  Widget _buildProductGrid(List<Product> products) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: products.map((p) {
+          // Each card takes ~half the screen width minus padding + spacing
+          final cardWidth =
+              (MediaQuery.of(context).size.width - 20 * 2 - 12) / 2;
+          return GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProductDetailScreen(product: p),
+              ),
+            ),
+            child: SizedBox(
+              width: cardWidth,
+              child: ProductCard(
+                productName: p.name,
+                productPrice: p.price,
+                imageUrl: p.imageUrl,
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -494,7 +487,7 @@ class _myHomePageState extends ConsumerState<myHomePage> {
             ),
           ),
 
-          // Cart items
+          // Cart list
           Expanded(
             child: cart.isEmpty
                 ? const Center(
@@ -535,14 +528,12 @@ class _myHomePageState extends ConsumerState<myHomePage> {
                     ),
                     itemCount: cart.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = cart[index];
-                      return _buildCartItem(item);
-                    },
+                    itemBuilder: (context, index) =>
+                        _buildCartItem(cart[index]),
                   ),
           ),
 
-          // Bottom total + checkout
+          // Bottom checkout bar
           if (cart.isNotEmpty)
             Container(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
@@ -638,6 +629,7 @@ class _myHomePageState extends ConsumerState<myHomePage> {
     final imgUrl = item.imageUrl.isNotEmpty
         ? item.imageUrl
         : 'https://picsum.photos/seed/${Uri.encodeComponent(item.name)}/400/300';
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -732,7 +724,7 @@ class _myHomePageState extends ConsumerState<myHomePage> {
               ),
             ),
           ),
-          // Remove button
+          // Remove
           IconButton(
             onPressed: () {
               if (item.id != null) {
@@ -774,7 +766,6 @@ class _myHomePageState extends ConsumerState<myHomePage> {
         child: Column(
           children: [
             const SizedBox(height: 10),
-            // Avatar
             CircleAvatar(
               radius: 44,
               backgroundColor: AppColors.lime.withValues(alpha: 0.2),
@@ -819,8 +810,6 @@ class _myHomePageState extends ConsumerState<myHomePage> {
               ),
             ],
             const SizedBox(height: 24),
-
-            // Tiles
             _profileTile(
               icon: Icons.receipt_long_rounded,
               label: 'My Orders',
