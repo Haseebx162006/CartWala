@@ -1,6 +1,6 @@
 import 'package:cartwala/features/auth/services/FIrebase_Auth/AuthService.dart';
-import 'package:cartwala/features/auth/widgets/auth_button.dart';
-import 'package:cartwala/features/auth/widgets/auth_container.dart';
+import 'package:cartwala/widgets/auth_button.dart';
+import 'package:cartwala/widgets/auth_container.dart';
 import 'package:flutter/material.dart';
 
 class Signup extends StatefulWidget {

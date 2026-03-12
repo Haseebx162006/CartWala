@@ -42,7 +42,7 @@ exports.signUp= async(req,res)=>{
             phone:phone
         })
 
-        const token= genToken(user._id)
+        const token= await genToken(user._id)
         return res.status(201).json({
             success: true,
             result: token
@@ -73,7 +73,7 @@ exports.login = async( req, res)=>{
             return res.status(400).json({message:"Password must be at least 6 characters long"})
         }
 
-    const existingUser =  User.findOne({email})
+    const existingUser = await  User.findOne({email})
     if(!existingUser){
         return res.status(404).json({
             msg:"User does not exist . Signup karo"
@@ -81,7 +81,7 @@ exports.login = async( req, res)=>{
         )
     }
 
-    const match = existingUser.matchPassword(password);
+    const match = await existingUser.matchPassword(password);
 
     if(!match){
         return res.status(401).json({
@@ -89,7 +89,7 @@ exports.login = async( req, res)=>{
         })      
     }
 
-    const token = genToken(existingUser._id)
+    const token = await genToken(existingUser._id)
     return res.status(200).json({
         success: true,
         result: token

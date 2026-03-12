@@ -8,3 +8,5 @@ const db = async () => {
         console.error('Database connection error:', error)
     }
 }
+
+module.exports = db;

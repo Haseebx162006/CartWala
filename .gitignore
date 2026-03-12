@@ -115,3 +115,4 @@ serviceAccountKey.json
 firebase_options.dart
 
 google-services.json (sometimes private)
+android/app/google-services.json

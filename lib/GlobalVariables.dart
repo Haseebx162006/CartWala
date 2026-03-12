@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-// Server base URL
-const String kBaseUrl = 'http://localhost:3000';
+// Server base URL — use 10.0.2.2 for Android emulator, localhost for web/desktop
+const String kBaseUrl = 'http://10.0.2.2:5000';
 
 // ---------------------------------------------------------------------------
 // AppColors — single source of truth for every colour in the app
