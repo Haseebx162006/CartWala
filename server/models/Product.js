@@ -15,13 +15,20 @@ const ProductSchema = mongoose.Schema({
         required:true},
     imageUrl:{
         type:String,
-        required:true},
+        default:''},
+    storeId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'store',
+        default: null},
+    sellerFirebaseUid:{
+        type: String,
+        default: ''},
     created_at:{
         type:Date,
-        default: Date.now()},
+        default: Date.now},
     updated_at:{
         type:Date,
-        default: Date.now()},
+        default: Date.now},
 
     isActive: {
     type: Boolean,

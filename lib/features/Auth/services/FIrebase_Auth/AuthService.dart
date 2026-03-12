@@ -1,40 +1,74 @@
+import 'package:cartwala/Models/user_model.dart';
+import 'package:cartwala/features/Auth/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Authservice {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Future<void> createUserwithEmailandPassword(
-    BuildContext context,
-    String name,
-    String email,
-    String password,
-  ) async {
-    try {
-      final UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
-      print(userCredential.user?.uid);
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: ${e.message}"),
-          duration: Duration(seconds: 4),
-        ),
-      );
-    }
-  }
 
-  Future<void> signInWithEmailAndPassword(
-    BuildContext context,
-    String email,
-    String password,
-  ) async {
+  /// Sign up with email + password, then sync to MongoDB.
+  Future<AppUser?> createUserwithEmailandPassword(
+    BuildContext context, {
+    required String name,
+    required String email,
+    required String password,
+    String phone = '',
+    String role = 'buyer',
+    String jazzcashNumber = '',
+  }) async {
     try {
-      final UserCredential loggedUser = await _auth.signInWithEmailAndPassword(
+      final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      print(loggedUser.user?.uid);
+      await cred.user?.updateDisplayName(name);
+      await cred.user?.reload();
+
+      // Sync to MongoDB
+      final appUser = await UserService.syncUser(
+        name: name,
+        email: email,
+        phone: phone,
+        role: role,
+        jazzcashNumber: jazzcashNumber,
+      );
+      return appUser;
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error: ${e.message}"),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), duration: Duration(seconds: 4)),
+      );
+    }
+    return null;
+  }
+
+  /// Sign in with email + password, then sync to MongoDB.
+  Future<AppUser?> signInWithEmailAndPassword(
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
+    try {
+      final cred = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final user = cred.user;
+      if (user == null) return null;
+
+      // Sync to MongoDB
+      final appUser = await UserService.syncUser(
+        name: user.displayName ?? 'User',
+        email: user.email ?? email,
+      );
+      return appUser;
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -43,41 +77,50 @@ class Authservice {
         ),
       );
     }
+    return null;
   }
 
   Future<void> signout() async {
-    await FirebaseAuth.instance.signOut();
+    await _auth.signOut();
   }
 
-  Future<User?> signUpWithGoogle(BuildContext context) async {
+  /// Google sign-in, then sync to MongoDB.
+  Future<AppUser?> signUpWithGoogle(
+    BuildContext context, {
+    String role = 'buyer',
+  }) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn.instance
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance
           .authenticate();
 
-      if (googleUser == null) {
-        return null;
-      }
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      final OAuthCredential credential = await GoogleAuthProvider.credential(
-        idToken: googleUser.authentication.idToken,
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
       );
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
-      return userCredential.user;
-    } on GoogleSignInException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: ${e.description ?? e.toString()}"),
-          duration: Duration(seconds: 4),
-        ),
+      final user = userCredential.user;
+      if (user == null) return null;
+
+      // Sync to MongoDB
+      final appUser = await UserService.syncUser(
+        name: user.displayName ?? 'User',
+        email: user.email ?? '',
+        role: role,
       );
+      return appUser;
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error: ${e.message}"),
           duration: Duration(seconds: 4),
         ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), duration: Duration(seconds: 4)),
       );
     }
     return null;

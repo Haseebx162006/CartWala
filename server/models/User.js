@@ -18,20 +18,31 @@ const userSchema = mongoose.Schema({
     },
     phone:{
         type:String,
-        unique: true
+        unique: true,
+        sparse: true,
+        default: undefined
     },
     role:{
         type: String,
-        enum:['Admin',"User"],
-        default: 'User'
+        enum:['admin','buyer','seller'],
+        default: 'buyer'
+    },
+    firebaseUid:{
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    jazzcashNumber:{
+        type: String,
+        default: ''
     },
     created_at:{
         type:Date,
-        default: Date.now()
+        default: Date.now
     },
     updated_at:{
         type:Date,
-        default: Date.now()
+        default: Date.now
     }
 })
 userSchema.pre("save", async function() {

@@ -1,50 +1,50 @@
 import 'package:cartwala/GlobalVariables.dart';
 import 'package:cartwala/Route.dart';
-import 'package:cartwala/features/auth/screens/LoginScreen.dart';
+import 'package:cartwala/features/Auth/screens/LoginScreen.dart';
+import 'package:cartwala/features/Auth/screens/role_router.dart';
 import 'package:cartwala/firebase_options.dart';
-import 'package:cartwala/myHomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await GoogleSignIn.instance.initialize();
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) => generateRoute(settings),
-      title: "Amazon Clone",
+      title: "Cartwala",
       theme: ThemeData(
         scaffoldBackgroundColor: GlobalVariables.backgroundColor,
         colorScheme: ColorScheme.light(primary: GlobalVariables.secondaryColor),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           elevation: 0,
           iconTheme: IconThemeData(color: Colors.black),
         ),
       ),
-      home: StreamBuilder(
+      home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(color: AppColors.lime),
+              ),
+            );
           }
           if (snapshot.data != null) {
-            return myHomePage();
+            return const RoleRouter();
           }
-
-          return LoginScreen();
+          return const LoginScreen();
         },
       ),
     );

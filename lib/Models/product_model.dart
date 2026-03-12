@@ -7,6 +7,7 @@ class Product {
   final String imageUrl;
   final int stock;
   final bool isActive;
+  final int quantity; // used for cart items
 
   Product({
     this.id,
@@ -17,22 +18,25 @@ class Product {
     this.imageUrl = '',
     this.stock = 0,
     this.isActive = true,
+    this.quantity = 1,
   });
+
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['_id'],
-      name: json['name'],
-      description: json['description'],
-      price: (json['price'] as num).toDouble(),
-      category: json['category'],
-      imageUrl: json['imageUrl'],
-      stock: json['stock'],
-      isActive: json['isActive'],
+      id: json['_id']?.toString(),
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      category: json['category'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      stock: json['stock'] ?? 0,
+      isActive: json['isActive'] ?? true,
+      quantity: json['quantity'] ?? 1,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final map = <String, dynamic>{
       'name': name,
       'description': description,
       'price': price,
@@ -41,5 +45,7 @@ class Product {
       'stock': stock,
       'isActive': isActive,
     };
+    if (id != null) map['_id'] = id;
+    return map;
   }
 }

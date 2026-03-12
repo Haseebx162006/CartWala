@@ -1,101 +1,109 @@
-const User = require('../models/User')
-const genToken=require('../util/token')
-exports.signUp= async(req,res)=>{
+const User = require('../models/User');
+const crypto = require('crypto');
 
-    const {name,email,password,phone} = req.body
-    try{
-        if(!name || !email || !password || !phone){
-            return res.status(400).json({message:"All fields are required"})
-        }
-
-        // Name validation
-        if(typeof name !== 'string' || name.trim().length < 3){
-            return res.status(400).json({message:"Name must be at least 3 characters long"})
-        }
-
-        if(typeof email !== 'string' || !email.includes('@')){
-            return res.status(400).json({message:"Invalid email format"})
-        }
-
-        if(typeof password !== 'string' || password.length < 6){    
-            return res.status(400).json({message:"Password must be at least 6 characters long"})
-
-        }
-
-        if(typeof phone !== 'string'){    
-            return res.status(400).json({message:"Enter a valid Phone number"})
-            
-        }
-
-        const existingUser = await User.findOne({email});
-
-        if(existingUser){
-            return res.status(400).json({message:"User Already Exists Bhai"})
-        }
-
-
-        
-        const user = await User.create({
-            name:name,
-            email:email,
-            password:password,
-            phone:phone
-        })
-
-        const token= await genToken(user._id)
-        return res.status(201).json({
-            success: true,
-            result: token
-        })
-
-        
-    }catch(error){
-        res.status(500).json({message:"Server error"})
-    }
-}
-
-exports.login = async( req, res)=>{
-    const { email , password} = req.body
-
+// ─── Sync Firebase user → MongoDB (called after every Firebase signup/login) ──
+exports.syncUser = async (req, res) => {
     try {
-        
-    if(!email || !password){
-        return res.status(400).json({
-            msg:"All fields are required"
-        })
-    }
+        const firebaseUid = req.user.uid;
+        const { name, email, phone, role, jazzcashNumber } = req.body;
 
-       if(typeof email !== 'string' || !email.includes('@')){
-            return res.status(400).json({message:"Invalid email format"})
+        // Already synced?
+        let user = await User.findOne({ firebaseUid });
+        if (user) {
+            return res.status(200).json({
+                id: user._id, name: user.name, email: user.email,
+                phone: user.phone, role: user.role, jazzcashNumber: user.jazzcashNumber,
+            });
         }
 
-        if(typeof password !== 'string' || password.length < 6){    
-            return res.status(400).json({message:"Password must be at least 6 characters long"})
+        // Link existing email-only account
+        const emailUser = await User.findOne({ email });
+        if (emailUser) {
+            emailUser.firebaseUid = firebaseUid;
+            await emailUser.save();
+            return res.status(200).json({
+                id: emailUser._id, name: emailUser.name, email: emailUser.email,
+                phone: emailUser.phone, role: emailUser.role, jazzcashNumber: emailUser.jazzcashNumber,
+            });
         }
 
-    const existingUser = await  User.findOne({email})
-    if(!existingUser){
-        return res.status(404).json({
-            msg:"User does not exist . Signup karo"
+        // New user
+        const allowedRoles = ['buyer', 'seller'];
+        const userRole = allowedRoles.includes(role) ? role : 'buyer';
+
+        if (userRole === 'seller' && (!jazzcashNumber || jazzcashNumber.trim().length < 11)) {
+            return res.status(400).json({ message: 'JazzCash number required for sellers (min 11 digits)' });
         }
-        )
-    }
 
-    const match = await existingUser.matchPassword(password);
+        user = await User.create({
+            name: name || 'User',
+            email,
+            password: crypto.randomBytes(16).toString('hex'),
+            phone: phone || '',
+            firebaseUid,
+            role: userRole,
+            jazzcashNumber: userRole === 'seller' ? (jazzcashNumber || '').trim() : '',
+        });
 
-    if(!match){
-        return res.status(401).json({
-            msg:"Invalid credentials"
-        })      
-    }
-
-    const token = await genToken(existingUser._id)
-    return res.status(200).json({
-        success: true,
-        result: token
-    })
+        return res.status(201).json({
+            id: user._id, name: user.name, email: user.email,
+            phone: user.phone, role: user.role, jazzcashNumber: user.jazzcashNumber,
+        });
     } catch (error) {
-        console.log("Erro in login")
+        console.error('syncUser error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
+};
 
-}
+// ─── Get current user profile ─────────────────────────────────────────────────
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findOne({ firebaseUid: req.user.uid });
+        if (!user) return res.status(404).json({ message: 'Profile not found' });
+
+        return res.status(200).json({
+            id: user._id, name: user.name, email: user.email,
+            phone: user.phone, role: user.role, jazzcashNumber: user.jazzcashNumber,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// ─── Update profile ───────────────────────────────────────────────────────────
+exports.updateProfile = async (req, res) => {
+    try {
+        const user = await User.findOne({ firebaseUid: req.user.uid });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const { name, phone, jazzcashNumber } = req.body;
+        if (name) user.name = name.trim();
+        if (phone) user.phone = phone.trim();
+        if (jazzcashNumber !== undefined && user.role === 'seller') {
+            user.jazzcashNumber = jazzcashNumber.trim();
+        }
+        user.updated_at = Date.now();
+        await user.save();
+
+        return res.status(200).json({
+            id: user._id, name: user.name, email: user.email,
+            phone: user.phone, role: user.role, jazzcashNumber: user.jazzcashNumber,
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// ─── Admin: list all users ────────────────────────────────────────────────────
+exports.getAllUsers = async (req, res) => {
+    try {
+        const admin = await User.findOne({ firebaseUid: req.user.uid });
+        if (!admin || admin.role !== 'admin') {
+            return res.status(403).json({ message: 'Admin access required' });
+        }
+        const users = await User.find().select('-password');
+        return res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};

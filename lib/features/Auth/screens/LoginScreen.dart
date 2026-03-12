@@ -1,21 +1,49 @@
-import 'package:cartwala/features/auth/screens/SignUp.dart';
-import 'package:cartwala/features/auth/services/FIrebase_Auth/AuthService.dart';
+import 'package:cartwala/Providers/userProvider.dart';
+import 'package:cartwala/features/Auth/screens/SignUp.dart';
+import 'package:cartwala/features/Auth/services/FIrebase_Auth/AuthService.dart';
 import 'package:cartwala/widgets/auth_button.dart';
 import 'package:cartwala/widgets/auth_container.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   static const login_screen = 'login-auth';
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool ischeck = false;
+
+  Future<void> _handleLogin() async {
+    final appUser = await Authservice().signInWithEmailAndPassword(
+      context,
+      emailController.text.trim(),
+      passwordController.text.trim(),
+    );
+    if (appUser != null && mounted) {
+      ref
+          .read(userProvider.notifier)
+          .syncUser(name: appUser.name, email: appUser.email);
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    final appUser = await Authservice().signUpWithGoogle(context);
+    if (appUser != null && mounted) {
+      ref
+          .read(userProvider.notifier)
+          .syncUser(
+            name: appUser.name,
+            email: appUser.email,
+            role: appUser.role,
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,8 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 60),
-            Text(
+            const SizedBox(height: 60),
+            const Text(
               "Sign In",
               style: TextStyle(
                 fontFamily: 'Poppins',
@@ -33,17 +61,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontSize: 50,
               ),
             ),
-            SizedBox(height: 6),
-            Text(
+            const SizedBox(height: 6),
+            const Text(
               "Sign in to your account and start shopping!",
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w400,
               ),
             ),
-            SizedBox(height: 18),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 28),
+            const Text(
               " Email",
               style: TextStyle(
                 fontFamily: 'Poppins',
@@ -51,15 +78,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontSize: 20,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             AuthContainer(
               hinttext: "Email",
               controller: emailController,
               obsecuretext: false,
             ),
-            SizedBox(height: 10),
-
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               " Password",
               style: TextStyle(
                 fontFamily: 'Poppins',
@@ -67,26 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 fontSize: 20,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             AuthContainer(
               hinttext: "Password",
               controller: passwordController,
               obsecuretext: true,
             ),
-            SizedBox(height: 15),
-            AuthButton(
-              text: "Sign In",
-              onPressed: () => {
-                Authservice().signInWithEmailAndPassword(
-                  context,
-                  emailController.text.trim(),
-                  passwordController.text.trim(),
-                ),
-              },
-            ),
-            SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+            const SizedBox(height: 15),
+            AuthButton(text: "Sign In", onPressed: _handleLogin),
+            const SizedBox(height: 14),
+            const Row(
               children: [
                 Text(
                   "───────────────── OR ─────────────────",
@@ -98,83 +114,42 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Authservice().signUpWithGoogle(context);
-                    },
-                    child: Container(
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            "assets/images/google.png",
-                            height: 20,
-                            width: 20,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            "Google",
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+            const SizedBox(height: 14),
+            GestureDetector(
+              onTap: _handleGoogleLogin,
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/images/google.png",
+                      height: 20,
+                      width: 20,
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      "Sign in with Google",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            "assets/images/google.png",
-                            height: 20,
-                            width: 20,
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            "Google",
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-            SizedBox(height: 200),
+            const SizedBox(height: 200),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  "Dont have an account? ",
+                const Text(
+                  "Don't have an account? ",
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w400,
@@ -182,13 +157,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Signup()),
-                    );
-                  },
-                  child: Text(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => Signup()),
+                  ),
+                  child: const Text(
                     "Sign Up",
                     style: TextStyle(
                       fontFamily: 'Poppins',
