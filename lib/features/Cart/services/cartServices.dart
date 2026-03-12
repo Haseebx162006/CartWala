@@ -7,15 +7,6 @@ import 'package:http/http.dart' as http;
 class CartService {
   final String baseUrl = kBaseUrl;
 
-  List<Product> _parseCartItems(http.Response response) {
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      return (jsonData['items'] as List)
-          .map((item) => Product.fromJson(item))
-          .toList();
-    }
-    return [];
-  }
 
   Future<List<Product>> fetchCart() async {
     final headers = await authHeaders();
@@ -59,3 +50,12 @@ class CartService {
     return _parseCartItems(response);
   }
 }
+  List<Product> _parseCartItems(http.Response response) {
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      return (jsonData['items'] as List)
+          .map((item) => Product.fromJson(item))
+          .toList();
+    }
+    return [];
+  }

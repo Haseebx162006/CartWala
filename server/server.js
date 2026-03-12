@@ -11,6 +11,7 @@ const productRoutes = require('./routes/productRoute');
 const cartRoutes = require('./routes/cartRoutes');
 const storeRoutes = require('./routes/storeRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // Middleware
 app.use(cors());
@@ -23,6 +24,7 @@ app.use('/api', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ status: 'Cartwala API running' }));
