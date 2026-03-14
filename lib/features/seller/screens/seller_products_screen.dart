@@ -2,10 +2,13 @@ import 'package:cartwala/GlobalVariables.dart';
 import 'package:cartwala/Models/product_model.dart';
 import 'package:cartwala/Models/store_model.dart';
 import 'package:cartwala/features/Product/services/product_service.dart';
+import 'package:cartwala/features/Product/services/image_upload_service.dart';
 import 'package:cartwala/features/Auth/services/api_helper.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class SellerProductsScreen extends StatefulWidget {
   final Store store;
@@ -18,6 +21,8 @@ class SellerProductsScreen extends StatefulWidget {
 class _SellerProductsScreenState extends State<SellerProductsScreen> {
   List<Product> _products = [];
   bool _loading = true;
+  final ImageUploadService _imageUploadService = ImageUploadService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -226,6 +231,48 @@ class _SellerProductsScreenState extends State<SellerProductsScreen> {
     final imgC = TextEditingController();
     final stockC = TextEditingController();
     bool loading = false;
+    bool uploadingImage = false;
+
+    Future<void> pickAndUploadImage(StateSetter setSheetState) async {
+      try {
+        final picked = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+        );
+
+        if (picked == null) return;
+
+        setSheetState(() => uploadingImage = true);
+        final uploadedUrl = await _imageUploadService.uploadImage(
+          File(picked.path),
+        );
+
+        if (uploadedUrl == null || uploadedUrl.isEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Image upload failed')),
+            );
+          }
+          return;
+        }
+
+        imgC.text = uploadedUrl;
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image uploaded successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Upload error: $e')));
+        }
+      } finally {
+        setSheetState(() => uploadingImage = false);
+      }
+    }
 
     showModalBottomSheet(
       context: context,
@@ -294,6 +341,30 @@ class _SellerProductsScreenState extends State<SellerProductsScreen> {
                         'Image URL',
                         Icons.image,
                         required_: false,
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: uploadingImage || loading
+                              ? null
+                              : () => pickAndUploadImage(setSheetState),
+                          icon: uploadingImage
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.upload_file),
+                          label: Text(
+                            uploadingImage
+                                ? 'Uploading...'
+                                : 'Pick & Upload to Cloudinary',
+                            style: const TextStyle(fontFamily: 'Poppins'),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       _sheetField(
