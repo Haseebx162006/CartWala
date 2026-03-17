@@ -25,7 +25,14 @@ class _RoleRouterState extends ConsumerState<RoleRouter> {
   }
 
   Future<void> _loadProfile() async {
-    await ref.read(userProvider.notifier).loadProfile();
+    try {
+      await ref
+          .read(userProvider.notifier)
+          .loadProfile()
+          .timeout(const Duration(seconds: 12));
+    } catch (_) {
+      // If backend is unreachable, continue with local auth session.
+    }
     if (mounted) setState(() => _loading = false);
   }
 

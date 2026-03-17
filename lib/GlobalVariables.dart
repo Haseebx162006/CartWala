@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-// Server base URL — use 10.0.2.2 for Android emulator, localhost for web/desktop
-const String kBaseUrl = 'http://10.0.2.2:5000' ;
+// Server base URL.
+// Override for device/release builds with:
+// flutter build apk --release --dart-define=API_BASE_URL=http://YOUR_LAN_IP:5000
+const String kBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://10.0.2.2:5000',
+);
 
 // ---------------------------------------------------------------------------
 // AppColors — single source of truth for every colour in the app

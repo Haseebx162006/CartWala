@@ -14,17 +14,19 @@ class UserService {
     String jazzcashNumber = '',
   }) async {
     final headers = await authHeaders();
-    final res = await http.post(
-      Uri.parse('$kBaseUrl/api/auth/sync'),
-      headers: headers,
-      body: jsonEncode({
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'role': role,
-        'jazzcashNumber': jazzcashNumber,
-      }),
-    );
+    final res = await http
+        .post(
+          Uri.parse('$kBaseUrl/api/auth/sync'),
+          headers: headers,
+          body: jsonEncode({
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'role': role,
+            'jazzcashNumber': jazzcashNumber,
+          }),
+        )
+        .timeout(const Duration(seconds: 12));
     if (res.statusCode == 200 || res.statusCode == 201) {
       return AppUser.fromJson(jsonDecode(res.body));
     }
@@ -34,10 +36,9 @@ class UserService {
   /// Get current user profile from MongoDB.
   static Future<AppUser?> getProfile() async {
     final headers = await authHeaders();
-    final res = await http.get(
-      Uri.parse('$kBaseUrl/api/auth/profile'),
-      headers: headers,
-    );
+    final res = await http
+        .get(Uri.parse('$kBaseUrl/api/auth/profile'), headers: headers)
+        .timeout(const Duration(seconds: 12));
     if (res.statusCode == 200) {
       return AppUser.fromJson(jsonDecode(res.body));
     }
