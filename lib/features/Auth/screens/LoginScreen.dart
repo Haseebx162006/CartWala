@@ -24,19 +24,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       emailController.text.trim(),
       passwordController.text.trim(),
     );
+    // User is now authenticated in Firebase. StreamBuilder will handle navigation.
     if (appUser != null && mounted) {
+      // Sync to MongoDB in background (non-blocking)
+      // If this fails, user stays logged in since Firebase auth is our source of truth
       ref
           .read(userProvider.notifier)
-          .syncUser(name: appUser.name, email: appUser.email);
+          .syncUserInBackground(name: appUser.name, email: appUser.email);
     }
   }
 
   Future<void> _handleGoogleLogin() async {
     final appUser = await Authservice().signUpWithGoogle(context);
+    // User is now authenticated in Firebase. StreamBuilder will handle navigation.
     if (appUser != null && mounted) {
+      // Sync to MongoDB in background (non-blocking)
+      // If this fails, user stays logged in since Firebase auth is our source of truth
       ref
           .read(userProvider.notifier)
-          .syncUser(
+          .syncUserInBackground(
             name: appUser.name,
             email: appUser.email,
             role: appUser.role,

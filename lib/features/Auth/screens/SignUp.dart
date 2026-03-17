@@ -67,10 +67,13 @@ class _SignupState extends ConsumerState<Signup> {
       jazzcashNumber: jazzcash,
     );
 
+    // User is now authenticated in Firebase. StreamBuilder will handle navigation.
     if (appUser != null && mounted) {
+      // Sync to MongoDB in background (non-blocking)
+      // If this fails, user stays logged in since Firebase auth is our source of truth
       ref
           .read(userProvider.notifier)
-          .syncUser(
+          .syncUserInBackground(
             name: appUser.name,
             email: appUser.email,
             phone: appUser.phone,
@@ -226,7 +229,7 @@ class _SignupState extends ConsumerState<Signup> {
                       if (appUser != null && mounted) {
                         ref
                             .read(userProvider.notifier)
-                            .syncUser(
+                            .syncUserInBackground(
                               name: appUser.name,
                               email: appUser.email,
                               role: appUser.role,
