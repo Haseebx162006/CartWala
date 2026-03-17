@@ -162,6 +162,10 @@ class Authservice {
       await googleSignIn.initialize(serverClientId: serverClientId);
       final googleUser = await googleSignIn.authenticate();
 
+      if (googleUser == null) {
+        return null; // User cancelled sign-in
+      }
+
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       final OAuthCredential credential = GoogleAuthProvider.credential(

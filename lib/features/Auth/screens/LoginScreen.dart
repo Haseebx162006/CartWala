@@ -102,15 +102,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 15),
             AuthButton(text: "Sign In", onPressed: _handleLogin),
             const SizedBox(height: 14),
-            const Row(
+            Row(
               children: [
-                Text(
-                  "───────────────── OR ─────────────────",
+                const Expanded(
+                  child: Divider(color: Colors.grey, thickness: 1),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  "OR",
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
+                    color: Colors.grey,
                   ),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Divider(color: Colors.grey, thickness: 1),
                 ),
               ],
             ),

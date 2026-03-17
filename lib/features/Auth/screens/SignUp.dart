@@ -126,7 +126,6 @@ class _SignupState extends ConsumerState<Signup> {
             ),
             const SizedBox(height: 16),
 
-            
             _label("Name"),
             const SizedBox(height: 8),
             AuthContainer(
@@ -194,13 +193,22 @@ class _SignupState extends ConsumerState<Signup> {
             const SizedBox(height: 14),
             Row(
               children: [
+                const Expanded(
+                  child: Divider(color: Colors.grey, thickness: 1),
+                ),
+                const SizedBox(width: 8),
                 const Text(
-                  "───────────────── OR ─────────────────",
+                  "OR",
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
+                    color: Colors.grey,
                   ),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Divider(color: Colors.grey, thickness: 1),
                 ),
               ],
             ),
